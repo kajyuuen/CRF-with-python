@@ -1,0 +1,10 @@
+-DOCSTART- -X- O O
+
+Peter NNP I-NP I-PER
+Blackburn NNP I-NP I-PER
+
+-DOCSTART- -X- O O
+
+1966 CD I-NP I-MISC
+World NNP I-NP I-MISC
+Cup NNP I-NP I-MISC

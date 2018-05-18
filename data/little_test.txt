@@ -1,0 +1,19 @@
+-DOCSTART- -X- O O
+
+Rockwell NNP B-NP
+said VBD B-VP
+the DT B-NP
+agreement NN I-NP
+calls VBZ B-VP
+for IN B-SBAR
+it PRP B-NP
+to TO B-VP
+supply VB I-VP
+200 CD B-NP
+additional JJ I-NP
+so-called JJ I-NP
+shipsets NNS I-NP
+for IN B-PP
+the DT B-NP
+planes NNS I-NP
+. . O
