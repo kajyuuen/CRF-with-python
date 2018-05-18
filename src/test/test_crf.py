@@ -36,8 +36,8 @@ class CRFTest(unittest.TestCase):
         crf = CRF(self.features, self.pos_set)
         for x_list in self.test_word_data:
             crf.predict(x_list)
-            alpha_z = round(crf.forward_algorithm(x_list)[-1]["<EOS>"], 3)
-            beta_z = round(crf.backward_algorithm(x_list)[0]["<BOS>"], 3)
+            alpha_z = round(crf._forward_algorithm(x_list)[-1]["<EOS>"], 3)
+            beta_z = round(crf._backward_algorithm(x_list)[0]["<BOS>"], 3)
             self.assertEqual(alpha_z, beta_z)
 
     def test_marginal_probability(self):
@@ -47,16 +47,16 @@ class CRFTest(unittest.TestCase):
         crf = CRF(self.features, self.pos_set)
         x_list = self.test_word_data[0]
         crf.predict(x_list)
-        crf.forward_algorithm(x_list)
-        crf.backward_algorithm(x_list)
+        crf._forward_algorithm(x_list)
+        crf._backward_algorithm(x_list)
         for m in range(1, len(x_list)):
             p_sum = 0
             for i_label in self.pos_set:
                 for j_label in self.pos_set:
-                    p_sum += crf.marginal_probability(x_list, i_label, j_label, m)
+                    p_sum += crf._marginal_probability(x_list, i_label, j_label, m)
             self.assertEqual(1, round(p_sum))
 
-    def test_marginal_probability(self):
+    def test_fit(self):
         """
         学習前と学習後で重みが異なる
         """

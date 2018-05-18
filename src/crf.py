@@ -68,8 +68,15 @@ class CRF:
             predict_labels.append(predict_label)
         return predict_labels
 
-    def backward_algorithm(self, x_list):
-        # TODO: 実行前にpredictの実行を要求させないようにする
+    def fit(self, x_lists, y_lists):
+        for x_list, y_list in zip(x_lists, y_lists):
+            self.predict(x_list)
+            self._forward_algorithm(x_list)
+            self._backward_algorithm(x_list)
+            self.learning_rate * self._gradient(x_list, y_list)
+            self.w_lambda += self.learning_rate * self._gradient(x_list, y_list)
+
+    def _backward_algorithm(self, x_list):
         beta_node = [{label : 1 for label in self.labels}]
 
         for ind in range(len(x_list)):
@@ -90,8 +97,7 @@ class CRF:
         self.beta_node = beta_node
         return beta_node
 
-    def forward_algorithm(self, x_list):
-        # TODO: 実行前にpredictの実行を要求させないようにする(プライベートメソッドにする)
+    def _forward_algorithm(self, x_list):
         alpha_node = [{label: exp(self.node[0][label]) for label in self.labels}]
 
         for ind in range(1, len(x_list)):
@@ -109,15 +115,7 @@ class CRF:
         self.alpha_node = alpha_node
         return alpha_node
 
-    def fit(self, x_lists, y_lists):
-        for x_list, y_list in zip(x_lists, y_lists):
-            self.predict(x_list)
-            self.forward_algorithm(x_list)
-            self.backward_algorithm(x_list)
-            self.learning_rate * self.gradient(x_list, y_list)
-            self.w_lambda += self.learning_rate * self.gradient(x_list, y_list)
-
-    def gradient(self, x_list, y_list):
+    def _gradient(self, x_list, y_list):
         gradient_value = 0
         y_list = ["<BOS>"] + y_list
         for m in range(1, len(x_list)):
@@ -127,12 +125,12 @@ class CRF:
             for i_label in self.labels:
                 for j_label in self.labels:
                     predict_feature_vec = np.array([func(x, i_label) for func in self.features.functions] + [func(i_label, j_label) for func in self.features.label_functions])
-                    term += self.marginal_probability(x_list, i_label, j_label, m) * predict_feature_vec
+                    term += self._marginal_probability(x_list, i_label, j_label, m) * predict_feature_vec
             gradient_value += feature_vec - term
         return gradient_value
 
 
-    def marginal_probability(self, x_list, i_label, j_label, m):
+    def _marginal_probability(self, x_list, i_label, j_label, m):
         """
         時刻m-1のときのラベルが: i_label
         時刻mのときのラベルが: j_label
