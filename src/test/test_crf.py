@@ -18,7 +18,6 @@ class CRFTest(unittest.TestCase):
         # テストデータ
         self.test_word_data =  [["Peter", "Daniel", "Blackburn"], ["1980", "World"]]
 
-
     def test_predict(self):
         """
         系列x_listに対して，予測させた系列ラベルy_listの長さが一致している

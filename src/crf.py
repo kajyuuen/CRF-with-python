@@ -8,7 +8,7 @@ class CRF:
         # 重みベクトル
         if random_seed is not None:
             np.random.seed(random_seed)
-        self.w_lambda = np.random.rand(features.dimension)
+        self.w_lambda = np.random.rand(features.dimension) * 0.0001
         self.labels = labels
         self.learning_rate = learning_rate
 
@@ -23,7 +23,7 @@ class CRF:
         # m=1のとき
         current_edge = {}
         current_node = {}
-        max_score = 10e-9
+        max_score = -10e+9
         for predict_y in self.labels:
             predict_feature_vec = [func(x_list[0], predict_y) for func in self.features.functions] + [func("<BOS>", predict_y) for func in self.features.label_functions]
             score = np.dot(self.w_lambda, predict_feature_vec)
@@ -37,7 +37,7 @@ class CRF:
             current_edge = {}
             current_node = {}
             for predict_y in self.labels:
-                max_score = 10e-9
+                max_score = -10e+9
                 for before_y in self.labels:
                     predict_feature_vec = [func(x_list[ind], predict_y) for func in self.features.functions] \
                                           + [func(before_y, predict_y) for func in self.features.label_functions]
@@ -59,7 +59,7 @@ class CRF:
 
         # m<M
         for ind, labels in enumerate(node[-2::-1]):
-            max_score = 10e-9
+            max_score = -10e+9
             for label, score in labels.items():
                 score = edge[-1-ind][(label, predict_labels[ind])]
                 if(score > max_score):
@@ -73,7 +73,6 @@ class CRF:
             self.predict(x_list)
             self._forward_algorithm(x_list)
             self._backward_algorithm(x_list)
-            self.learning_rate * self._gradient(x_list, y_list)
             self.w_lambda += self.learning_rate * self._gradient(x_list, y_list)
 
     def _backward_algorithm(self, x_list):
