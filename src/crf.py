@@ -25,7 +25,9 @@ class CRF:
         current_node = {}
         max_score = -10e+9
         for predict_y in self.labels:
-            predict_feature_vec = [func(x_list[0], predict_y) for func in self.features.functions] + [func("<BOS>", predict_y) for func in self.features.label_functions]
+            predict_feature_vec = [func(x_list[0], predict_y) for func in self.features.functions] \
+                                  + [func("<BOS>", predict_y) for func in self.features.label_functions] \
+                                  + [func(x_list[0], "<BOS>", predict_y) for func in self.features.word_label_functions]
             score = np.dot(self.w_lambda, predict_feature_vec)
             current_edge[("<BOS>", predict_y)] = score
             current_node[predict_y] = score
@@ -40,7 +42,8 @@ class CRF:
                 max_score = -10e+9
                 for before_y in self.labels:
                     predict_feature_vec = [func(x_list[ind], predict_y) for func in self.features.functions] \
-                                          + [func(before_y, predict_y) for func in self.features.label_functions]
+                                          + [func(before_y, predict_y) for func in self.features.label_functions] \
+                                          + [func(x_list[ind], before_y, predict_y) for func in self.features.word_label_functions]
                     score = np.dot(self.w_lambda, predict_feature_vec) + node[ind-1][before_y]
                     current_edge[(before_y, predict_y)] = score
                     if(score > max_score):
@@ -119,11 +122,15 @@ class CRF:
         y_list = ["<BOS>"] + y_list
         for m in range(1, len(x_list)):
             x, before_y, y = x_list[m], y_list[m-1], y_list[m]
-            feature_vec = [func(x, y) for func in self.features.functions] + [func(before_y, y) for func in self.features.label_functions]
+            feature_vec = [func(x, y) for func in self.features.functions] \
+                          + [func(before_y, y) for func in self.features.label_functions] \
+                          + [func(x, before_y, y) for func in self.features.word_label_functions]
             term = 0
             for i_label in self.labels:
                 for j_label in self.labels:
-                    predict_feature_vec = np.array([func(x, i_label) for func in self.features.functions] + [func(i_label, j_label) for func in self.features.label_functions])
+                    predict_feature_vec = np.array([func(x, i_label) for func in self.features.functions] \
+                                                   + [func(i_label, j_label) for func in self.features.label_functions] \
+                                                   + [func(x, i_label, j_label) for func in self.features.word_label_functions])
                     term += self._marginal_probability(x_list, i_label, j_label, m) * predict_feature_vec
             gradient_value += feature_vec - term
         return gradient_value

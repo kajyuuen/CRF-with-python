@@ -10,6 +10,7 @@ class Features:
     def __init__(self, labels):
         self.functions = []
         self.label_functions = []
+        self.word_label_functions = []
         self.labels = flatten(labels)
 
     def create_feature(self, word_set):
@@ -21,11 +22,11 @@ class Features:
             # y_{m-1}, y_mからなる素性関数ベクトル
             for before_label in ["<BOS>"] + self.labels:
                 self.add_label_feature(lambda y_b, y_c, bl=before_label, l=label: 1 if y_b==bl and y_c==l else 0)
-            # 一次マルコフ性を完全にカバーする為に必要
-            # TODO: x_m, y_{m-1}, y_mからなる素性関数ベクトル
-
+                # x_m, y_{m-1}, y_mからなる素性関数ベクトル
+                for word in word_set:
+                    self.add_word_label_feature(lambda x, y_b, y_c, w=word, bl=before_label, l=label: 1 if x==w and y_b==bl and y_c==l else 0)
             # 素性関数ベクトルの次元数
-            self.dimension = len(self.functions) + len(self.label_functions)
+            self.dimension = len(self.functions) + len(self.label_functions) + len(self.word_label_functions)
 
     def add_feature(self, f):
         self.functions.append(f)
@@ -33,10 +34,14 @@ class Features:
     def add_label_feature(self, f):
         self.label_functions.append(f)
 
+    def add_word_label_feature(self, f):
+        self.word_label_functions.append(f)
+
 class FeatureVector:
     def __init__(self, features, x_list, y_list):
         func_list = features.functions
         label_func_list = features.label_functions
+        word_label_func_list = features.word_label_functions
         # ラベルの種類
         L = len(features.labels)
 
@@ -47,6 +52,8 @@ class FeatureVector:
             pp_vec = [func(y_b, y) for func in label_func_list]
             # \sum_{m=1}^{M} \pi(x_m, y_m)
             pw_vec = [func(x, y) for func in func_list]
+            # \sum_{m=1}^{M} \pi(x_m, y_{m-1}, y_m)
+            ppw_vec = [func(x, y_b, y) for func in word_label_func_list]
             # ある時刻における素性関数ベクトル
-            current_vec = np.concatenate([pp_vec, pw_vec], axis=0)
+            current_vec = np.concatenate([pp_vec, pw_vec, ppw_vec], axis=0)
             self.mat = np.append(self.mat, current_vec[np.newaxis, :], axis=0)
